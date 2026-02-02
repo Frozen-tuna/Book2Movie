@@ -1,0 +1,13 @@
+argparse
+PyPDF2
+nltk
+pydub
+moviepy
+requests
+langchain-ollama
+langchain
+pydantic
+websocket-client
+rapidfuzz
+tinydb
+ebooklib

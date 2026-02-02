@@ -1,0 +1,4 @@
+# Ignore all contents inside the data directory
+data/*
+temp/*
+__pycache__/

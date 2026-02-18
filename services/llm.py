@@ -8,11 +8,8 @@ from config import Config
 from db_utils import upsert_json
 from prompts import Prompts
 from typing import List
-import json
-import os
 
 
-token = "your_bearer_token_here"
 # langchain.debug = True
 image_chain = None
 voice_type_chain = None

@@ -6,7 +6,7 @@ import json
 import base64
 from io import BytesIO
 
-from db_utils import fetch_json, upsert_json
+from services.db_utils import fetch_json, upsert_json
 
 
 def audio_to_string(audio):
@@ -23,7 +23,7 @@ def string_to_audio(encuded_audio):
     return audio_segment
 
 def check_status():
-    url = Config.TTS_API_URL + "/health"
+    url = "http://" +Config.TTS_API_URL + "/health"
     response = requests.get(url)
     if response.status_code == 200:
         return "API is ready"
@@ -33,7 +33,7 @@ def check_status():
 
 
 def get_voices():
-    url = Config.TTS_API_URL + "/v1/audio/voices"
+    url = "http://" +Config.TTS_API_URL + "/v1/audio/voices"
     response = requests.get(url)
     if response.status_code == 200:
         return response.json()
@@ -41,7 +41,7 @@ def get_voices():
         return False
     
 def generate_clip(text, voice):
-    url = Config.TTS_API_URL + "/v1/audio/speech"
+    url = "http://" + Config.TTS_API_URL + "/v1/audio/speech"
     data = {
         "download_format": "mp3",
         "input": text,

@@ -6,6 +6,7 @@ moviepy
 requests
 langchain-ollama
 langchain
+langchain_openai
 pydantic
 websocket-client
 rapidfuzz

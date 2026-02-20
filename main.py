@@ -1,12 +1,12 @@
 import argparse
-from db_utils import fetch_json, fetch_status, upsert_json, upsert_status
-import preprocess
-import audio
-import speech
-import image
-import movie
-import llm
-import true_characters
+from services.db_utils import fetch_json, fetch_status, upsert_json, upsert_status
+import services.preprocess
+import services.audio
+import services.speech
+import services.image
+import services.movie
+import services.llm
+import services.true_characters
 from tinydb import TinyDB
 
 def main(book_name, start_page, end_page):
@@ -17,21 +17,21 @@ def main(book_name, start_page, end_page):
     if not raw_voices:
         input("Press enter when tts server is running to fetch possible voices")
         raw_voices = {}
-        raw_voices["list"] = audio.get_voices()["voices"]
+        raw_voices["list"] = services.audio.get_voices()["voices"]
         upsert_json("raw_voices", raw_voices, voices_db)
 
-    llm.__init__()
+    services.llm.__init__()
 
     if not raw_voices.get("mapped_voices"):
         input("Press enter when llm server is running to map voices to gender")
-        raw_voices["mapped_voices"] = llm.populate_voice_types(raw_voices["list"])
+        raw_voices["mapped_voices"] = services.llm.populate_voice_types(raw_voices["list"])
         upsert_json("raw_voices", raw_voices, voices_db)
 
     book_db = TinyDB(book_name + ".json")
     status = fetch_status(start_page, end_page, book_db)
 
     if not status.get("text"):
-        text = preprocess.read(book_name, start_page, end_page)
+        text = services.preprocess.read(book_name, start_page, end_page)
         upsert_json("text", text, book_db)
         upsert_status(status, "text", start_page, end_page, book_db)
 
@@ -40,8 +40,8 @@ def main(book_name, start_page, end_page):
         input("Press enter when llm server is running to collect characters")
         text = fetch_json("text", book_db)
         character_data = fetch_json("characters", book_db)
-        characters = [true_characters.TrueCharacter.from_dict(char) for char in character_data] if character_data else []
-        characters = true_characters.populate_characters(text, characters)
+        characters = [services.true_characters.TrueCharacter.from_dict(char) for char in character_data] if character_data else []
+        characters = services.true_characters.populate_characters(text, characters)
         upsert_json("characters", [c.to_dict() for c in characters], book_db)
         upsert_status(status, "characters", start_page, end_page, book_db)
 
@@ -50,16 +50,16 @@ def main(book_name, start_page, end_page):
     if not status.get("quotes"):
         input("Press enter when llm server is running to map quotes to characters")
         text = fetch_json("text", book_db)
-        characters = [true_characters.TrueCharacter.from_dict(char) for char in fetch_json("characters", book_db)]
-        quotes = true_characters.map_quotes_to_characters(text, characters, book_db)
+        characters = [services.true_characters.TrueCharacter.from_dict(char) for char in fetch_json("characters", book_db)]
+        quotes = services.true_characters.map_quotes_to_characters(text, characters, book_db)
         upsert_json("quotes", quotes, book_db)
         upsert_status(status, "quotes", start_page, end_page, book_db)
 
     # assigning voices to characters. Saved between sessions
     if not status.get("character_voices"):
-        characters = [true_characters.TrueCharacter.from_dict(char) for char in fetch_json("characters", book_db)]
+        characters = [services.true_characters.TrueCharacter.from_dict(char) for char in fetch_json("characters", book_db)]
         quotes = fetch_json("quotes",  book_db)
-        characters, raw_voices["mapped_voices"] = speech.map_character_voices(raw_voices["mapped_voices"], quotes, characters)
+        characters, raw_voices["mapped_voices"] = services.speech.map_character_voices(raw_voices["mapped_voices"], quotes, characters)
         upsert_json("characters", [c.to_dict() for c in characters], book_db)
         upsert_json("raw_voices", raw_voices, voices_db)
         upsert_status(status, "character_voices", start_page, end_page, book_db)
@@ -67,9 +67,9 @@ def main(book_name, start_page, end_page):
     # put the voices of the characters onto the quotes
     if not status.get("voiced_quotes"):
         quotes = fetch_json("quotes", book_db)
-        characters = [true_characters.TrueCharacter.from_dict(char) for char in fetch_json("characters", book_db)]
+        characters = [services.true_characters.TrueCharacter.from_dict(char) for char in fetch_json("characters", book_db)]
         raw_voices = fetch_json("raw_voices", voices_db)
-        voiced_quotes = speech.assign_voices_to_quotes(quotes, characters, raw_voices["mapped_voices"])
+        voiced_quotes = services.speech.assign_voices_to_quotes(quotes, characters, raw_voices["mapped_voices"])
 
         upsert_json("voiced_quotes", voiced_quotes, book_db)
         upsert_json("raw_voices", raw_voices, voices_db)
@@ -81,27 +81,27 @@ def main(book_name, start_page, end_page):
     if not status.get("sound"):
         input("Press enter when tts server is running")
         voiced_quotes = fetch_json("voiced_quotes", book_db)
-        tomes = audio.generate_audio(voiced_quotes, av_db)
+        tomes = services.audio.generate_audio(voiced_quotes, av_db)
         upsert_json("tomes", tomes, av_db)
         upsert_status(status, "sound", start_page, end_page, book_db)
 
     if not status.get("image_prompts"):
         input("Press enter when llm server is running")
         tomes = fetch_json("tomes", av_db)
-        tomes = image.populate_tome_image_prompts(tomes, av_db)
+        tomes = services.image.populate_tome_image_prompts(tomes, av_db)
         upsert_json("tomes", tomes, av_db)
         upsert_status(status, "image_prompts", start_page, end_page, book_db)
 
     if not status.get("images"):
         input("Press enter when image server is running")
         tomes = fetch_json("tomes", av_db)
-        images = image.build_images(tomes, av_db)
+        images = services.image.build_images(tomes, av_db)
         upsert_json("images", images, av_db)
         upsert_status(status, "images", start_page, end_page, book_db)
 
     tomes = fetch_json("tomes", av_db)
     images = fetch_json("images", av_db)
-    movie.build_movie(tomes, images, book_name, start_page, end_page)
+    services.movie.build_movie(tomes, images, book_name, start_page, end_page)
 
 
 if __name__ == "__main__":

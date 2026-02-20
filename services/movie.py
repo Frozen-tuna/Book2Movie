@@ -1,7 +1,7 @@
 import base64
 import os
 from moviepy import AudioFileClip, ImageClip, concatenate_videoclips
-from audio import string_to_audio
+from services.audio import string_to_audio
 
 def build_movie(tomes, images, book_name, start, stop):
     clips = []

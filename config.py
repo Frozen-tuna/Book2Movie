@@ -1,13 +1,13 @@
 class Config:
-    LLM_URL = "http://localhost:5000"
-    LLM_CHARACTER_EXTRA_INSTRUCTIONS = """This story is told in first person. The narrator is one of the characters in the story and refers to themselves as "I" and "me". The narrator is the same character as Dr. Watson."""
+    LLM_URL = "localhost:11434"
+    LLM_CHARACTER_EXTRA_INSTRUCTIONS = """The main character of ender's game is Andrew 'ender' Wiggin. He goes by both Andrew and Ender. This is one character'"""
     LLM_STRUCTURED_OUTPUT_MODEL = "gemma3:27b-it-qat"
     LLM_QUOTE_MAPPING_MODEL = "mistral-small3.2:24b"
     CHUTES_API_KEY = "your_chutes_api_key_here"
-    TTS_API_URL = "http://localhost:8880"
+    TTS_API_URL = "localhost:8880"
     MAX_TTS_LENGTH = 600
     TTS_SPEED = 0.9
-    IMAGE_API_URL = "http://localhost:8188"
+    IMAGE_API_URL = "localhost:8188"
     NARRATOR_VOICE = "male_onyx"
     IMAGE_MODEL = "realDream_zitV3.safetensors"
     IMAGE_PREPROMPT = "highly detailed, masterpiece, futurisitc, high resolution, industrial era, english, movie still, dramatic lighting, cinematic, 8k, "

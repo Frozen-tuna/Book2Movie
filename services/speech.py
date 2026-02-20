@@ -3,7 +3,7 @@ import random
 import itertools
 from prompts import Prompts
 from config import Config
-import true_characters
+from  services.true_characters import narrator
 
 def map_character_voices(voices, quotes, characters):        
     all_voices = voices.copy()
@@ -16,7 +16,7 @@ def map_character_voices(voices, quotes, characters):
                 break
 
     # remove narrator voice from available voices
-    narrator_char = true_characters.narrator()
+    narrator_char = narrator()
     narrator_char.voice = Config.NARRATOR_VOICE
     if not any(c.name == narrator_char.name for c in characters):
         characters.append(narrator_char)

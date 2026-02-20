@@ -4,8 +4,8 @@ from dataclasses import asdict, dataclass, field
 import re
 from typing import List
 from config import Config
-import llm
-from db_utils import fetch_json, upsert_json
+from services.llm import get_characters, get_speaker
+from services.db_utils import fetch_json, upsert_json
 from prompts import Prompts
 from rapidfuzz import fuzz
 
@@ -116,7 +116,7 @@ def populate_characters(book_text, characters=[]):
     sections = split_book(" ".join(book_text), Config.SECTION_SIZE)
     for index, section in enumerate(sections):
         print("Collecting characters from section "+str(index+1)+" of "+str(len(sections)), end='\r')
-        current_chars = llm.get_characters(section)
+        current_chars = get_characters(section)
         true_chars = []
 
         for char in current_chars:
@@ -266,7 +266,7 @@ def map_quotes_to_characters(book_text, characters, db):
                 if quote in section:
                     characters = section_characters.get(i)
                     formatted_characters = "\n".join([f"Name: {char.name}" + (f", Type: {char.type.value}" if char.type else "") + (f", Aliases: {char.aliases}" if char.aliases else "") for char in characters])
-                    current_match = llm.get_speaker(quote, build_surrounding_text(book_text, k, 20), formatted_characters)
+                    current_match = get_speaker(quote, build_surrounding_text(book_text, k, 20), formatted_characters)
                     if best_match is None or (best_match.name.lower() == "unknown" and current_match.name != "unknown"):
                         best_match = current_match
             character = find_best_character_match(best_match, characters)

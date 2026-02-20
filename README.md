@@ -21,6 +21,9 @@ A local-first script to process ebooks into slideshows or movies using several t
 ```sh
 conda create --name book2movie python=3.11
 pip install -r requirements.txt
+sudo apt install ffmpeg
+#modify config to give some hints about the book
+python main.py ./data/{bookname.pdf/epub} {page_start} {page_end}
 ```
 
 ---
@@ -32,17 +35,24 @@ pip install -r requirements.txt
 ```sh
 python main.py data/AStudyInScarlet.epub 4 17
 ```
-
+![Success Console](assets/success.png)
 ### ComfyUI Setup
 
 ```sh
 python main.py --listen 0.0.0.0 --port 8188
 ```
 
+Models in required folders for the given comfyui workflow:
+Comfyui/models/diffusion_models/{Config.IMAGE_MODEL} #Should be a z-image-turbo based model
+Comfyui/models/text_encoders/qwen_3_4b.safetensors
+Comfyui/models/vae/ae.safetensors
+
+Image prompt in the config is up to personal preference. 
 ---
 
 ## Kokoro-FastAPI Voice Mapping
 
+![Voices Folder](assets/kokoro-voices.png)
 - For best results, prepend all models in Kokoro-FastAPI with `male`, `female`, and at least one `machine`.
 - Leave `af_heart.pt` as is (it's hardcoded).
 - This improves voice mapping so male characters are more likely to use male voices, etc. Current voice types are "Masculine", "Feminine", "Machine", and "Unknown".
@@ -60,6 +70,17 @@ ollama pull mistral-small3.2:24b
 - **Mistral-small3.2**: Slightly better for mapping characters to quotes.
 - Model names are in the config.
 
+## FAQ
+
+```sh
+Failed to parse Speaker from completion 
+```
+This means the model wasn't smart enough to return an object that could be correctly parsed. Gemma3 is about the dumbest model I think that can be used here and even then, its rare, but it happens. Just run the script again.
+
+```sh
+Couldn't find ffmpeg or avconv - defaulting to ffmpeg, but may not work
+```
+ffmpeg is required by both pydub and this script itself. Make sure ffmpeg is available in your PATH
 ---
 
 # How it works

@@ -8,8 +8,8 @@ from config import Config
 import urllib.request
 import urllib.parse
 
-from db_utils import fetch_json, upsert_json
-from llm import generate_image_prompt
+from services.db_utils import fetch_json, upsert_json
+from services.llm import generate_image_prompt
 
 client_id = str(uuid.uuid4())
 
@@ -157,13 +157,13 @@ def queue_prompt(prompt):
     global client_id
     p = {"prompt": prompt, "client_id": client_id}
     data = json.dumps(p).encode('utf-8')
-    req =  urllib.request.Request(Config.IMAGE_API_URL + "/prompt", data=data)
+    req =  urllib.request.Request("http://" + Config.IMAGE_API_URL + "/prompt", data=data)
     return json.loads(urllib.request.urlopen(req).read())
     
 def get_image(filename, subfolder, folder_type):
     data = {"filename": filename, "subfolder": subfolder, "type": folder_type}
     url_values = urllib.parse.urlencode(data)
-    with urllib.request.urlopen(Config.IMAGE_API_URL + "/view?{}".format(url_values)) as response:
+    with urllib.request.urlopen("http://" + Config.IMAGE_API_URL + "/view?{}".format(url_values)) as response:
         return response.read()
 
 def get_images(ws, prompt):
@@ -199,7 +199,7 @@ def build_images(tomes, av_db):
         print(f"Resuming generating images from index {starting_index}")
 
     ws = websocket.WebSocket()
-    ws.connect(f"ws://localhost:8188/ws?clientId={client_id}")
+    ws.connect(f"ws://{Config.IMAGE_API_URL}/ws?clientId={client_id}")
 
     for index, tome in enumerate(tomes[starting_index:], start=starting_index):
         print("Generating image from tome "+str(index) +" of "+str(len(tomes)-1), end='\r')
@@ -219,7 +219,7 @@ def build_images(tomes, av_db):
 
 
 def populate_tome_image_prompts(tomes, av_db):
-    debug_image_prompts = []
+    #debug_image_prompts = []
     for index, tome in enumerate(tomes):
         if not tome.get("image_prompt"):
             exerpt = ""
@@ -229,11 +229,10 @@ def populate_tome_image_prompts(tomes, av_db):
 
             print("Generating image prompt from tome "+str(index)+" of "+str(len(tomes)-1), end='\r')
             tome["image_prompt"] = generate_image_prompt(exerpt, tome["text"]).prompt
-            debug_image_prompts.append({"exerpt": exerpt, "image_prompt": tome["image_prompt"]})
+            #debug_image_prompts.append({"exerpt": exerpt, "image_prompt": tome["image_prompt"]})
             if index % 10 == 0:
                 upsert_json("tomes", tomes, av_db)
     print()
-    with open("data/debug_image_prompts.json", "w") as f:
-        json.dump(debug_image_prompts, f, indent=2)
-    print()
+    #with open("data/debug_image_prompts.json", "w") as f:
+        #json.dump(debug_image_prompts, f, indent=2)
     return tomes

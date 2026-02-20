@@ -5,7 +5,6 @@ from langchain_core.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, Field
 from config import Config
-from db_utils import upsert_json
 from prompts import Prompts
 from typing import List
 
@@ -64,6 +63,7 @@ def __init__():
     
     nemotron = ChatOllama(
         model="nemotron-3-nano:30b",
+        base_url="http://" + Config.LLM_URL,
         temperature=0.8,
         repeat_penalty=1.1,
         top_p=0.9,
@@ -76,6 +76,7 @@ def __init__():
 
     structured_output_model = ChatOllama(
         model=Config.LLM_STRUCTURED_OUTPUT_MODEL,
+        base_url="http://" +Config.LLM_URL,
         temperature=0.4,
         repeat_penalty=1.1,
         top_p=0.7,
@@ -84,6 +85,7 @@ def __init__():
 
     quote_mapping = ChatOllama(
         model=Config.LLM_QUOTE_MAPPING_MODEL,
+        base_url="http://" +Config.LLM_URL,
         temperature=0.6,
         repeat_penalty=1.1,
         top_p=0.9,

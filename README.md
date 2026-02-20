@@ -43,9 +43,12 @@ python main.py --listen 0.0.0.0 --port 8188
 ```
 
 Models in required folders for the given comfyui workflow:
-Comfyui/models/diffusion_models/{Config.IMAGE_MODEL} #Should be a z-image-turbo based model
-Comfyui/models/text_encoders/qwen_3_4b.safetensors
-Comfyui/models/vae/ae.safetensors
+
+-Comfyui/models/diffusion_models/{Config.IMAGE_MODEL} #Should be a z-image-turbo based model
+
+-Comfyui/models/text_encoders/qwen_3_4b.safetensors
+
+-Comfyui/models/vae/ae.safetensors
 
 Image prompt in the config is up to personal preference. 
 ---
